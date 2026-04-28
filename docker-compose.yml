@@ -1,0 +1,23 @@
+services:
+  pdf-converter:
+    build: .
+    container_name: pdf-converter
+    ports:
+      - "5000:5000"
+    volumes:
+      - pdf_uploads:/app/uploads
+      - pdf_outputs:/app/outputs
+    environment:
+      - MAX_CONTENT_LENGTH=52428800
+      - OUTPUT_DPI=150
+    restart: always
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  pdf_uploads:
+  pdf_outputs:
