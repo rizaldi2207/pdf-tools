@@ -236,6 +236,43 @@ def add_password():
     return jsonify({"job_id": job_id, "download_url": f"/download-protected/{job_id}"})
 
 
+# ── Unprotect: Remove password from PDF ──────────────────────────────────────
+
+@app.route("/remove-password", methods=["POST"])
+def remove_password():
+    if "file" not in request.files:
+        return jsonify({"error": "No file provided"}), 400
+
+    file = request.files["file"]
+    if not file.filename or not allowed_file(file.filename):
+        return jsonify({"error": "Invalid file. Only PDF is allowed"}), 400
+
+    password = request.form.get("password", "").strip()
+    if not password:
+        return jsonify({"error": "Password is required"}), 400
+
+    job_id = uuid.uuid4().hex
+    job_dir = OUTPUT_DIR / job_id
+    job_dir.mkdir(parents=True, exist_ok=True)
+
+    upload_path = save_upload(file, job_id)
+
+    try:
+        with pikepdf.open(str(upload_path), password=password) as pdf:
+            pdf.save(str(job_dir / "unprotected.pdf"))
+    except pikepdf.PasswordError:
+        shutil.rmtree(job_dir, ignore_errors=True)
+        return jsonify({"error": "Incorrect password"}), 400
+    except Exception as e:
+        shutil.rmtree(job_dir, ignore_errors=True)
+        return jsonify({"error": f"Failed to remove password: {str(e)}"}), 500
+    finally:
+        upload_path.unlink(missing_ok=True)
+
+    cleanup_old_jobs()
+    return jsonify({"job_id": job_id, "download_url": f"/download-unprotected/{job_id}"})
+
+
 # ── File serving ──────────────────────────────────────────────────────────────
 
 @app.route("/image/<job_id>/<filename>")
@@ -275,6 +312,14 @@ def download_protected(job_id: str):
     if not path.exists():
         abort(404)
     return send_file(str(path), as_attachment=True, download_name="protected.pdf")
+
+
+@app.route("/download-unprotected/<job_id>")
+def download_unprotected(job_id: str):
+    path = OUTPUT_DIR / job_id / "unprotected.pdf"
+    if not path.exists():
+        abort(404)
+    return send_file(str(path), as_attachment=True, download_name="unprotected.pdf")
 
 
 if __name__ == "__main__":

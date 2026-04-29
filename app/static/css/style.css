@@ -123,6 +123,27 @@ header { padding: 24px 0 0; }
 }
 .clear-btn:hover { color: var(--red); background: color-mix(in srgb, var(--red) 15%, transparent); }
 
+/* ── Mode toggle ── */
+.mode-toggle-wrap {
+  display: flex;
+  justify-content: center;
+}
+.mode-toggle-wrap .segmented {
+  gap: 0;
+}
+.mode-toggle-wrap .seg-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 20px;
+  font-size: .9rem;
+}
+.mode-toggle-wrap .seg-btn svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+
 /* ── Options row ── */
 .options-row {
   display: flex;
