@@ -50,11 +50,16 @@ def decrypt_pdf(src: Path, password: str, job_id: str) -> Path:
 # ── Pages ────────────────────────────────────────────────────────────────────
 
 @app.route("/")
+def home():
+    return render_template("landing.html")
+
+
+@app.route("/pdf-tools/convert")
 def index():
     return render_template("index.html", active_page="converter")
 
 
-@app.route("/protect")
+@app.route("/pdf-tools/protect")
 def protect_page():
     return render_template("protect.html", active_page="protect")
 
