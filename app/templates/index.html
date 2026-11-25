@@ -21,6 +21,7 @@
       <div class="segmented" id="output-toggle">
         <button class="seg-btn active" data-value="images">Images</button>
         <button class="seg-btn" data-value="docx">Word (DOCX)</button>
+        <button class="seg-btn" data-value="pptx">PowerPoint (PPTX)</button>
       </div>
     </div>
 
@@ -29,6 +30,14 @@
       <div class="segmented" id="fmt-toggle">
         <button class="seg-btn active" data-value="png">PNG</button>
         <button class="seg-btn" data-value="jpeg">JPEG</button>
+      </div>
+    </div>
+
+    <div class="option-group hidden" id="pptx-mode-group">
+      <span class="opt-label">PPTX Mode</span>
+      <div class="segmented" id="pptx-mode-toggle">
+        <button class="seg-btn active" data-value="editable" title="Text becomes editable text boxes">Editable text</button>
+        <button class="seg-btn" data-value="image" title="Each page as a picture — exact look, not editable">Image only</button>
       </div>
     </div>
 
@@ -96,13 +105,13 @@
     </div>
     <div>
       <p class="result-card-title">Conversion complete</p>
-      <p class="result-card-sub">Your PDF has been converted to Word format</p>
+      <p class="result-card-sub" id="docx-result-sub">Your PDF has been converted to Word format</p>
     </div>
     <a id="docx-download-btn" href="#" class="btn-primary result-card-btn">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
         <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/>
       </svg>
-      Download DOCX
+      <span id="docx-download-label">Download DOCX</span>
     </a>
   </div>
 </section>

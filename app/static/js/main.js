@@ -18,6 +18,7 @@ const lbImg = document.getElementById("lb-img");
 const toast = document.getElementById("toast");
 const fmtGroup = document.getElementById("fmt-group");
 const dpiGroup = document.getElementById("dpi-group");
+const pptxModeGroup = document.getElementById("pptx-mode-group");
 const pdfPasswordInput = document.getElementById("pdf-password");
 const pwEyeBtn = document.getElementById("pw-eye-btn");
 const pwEyeOpen = document.getElementById("pw-eye-open");
@@ -26,6 +27,7 @@ const pwEyeClosed = document.getElementById("pw-eye-closed");
 let selectedOutput = "images";
 let selectedFmt = "png";
 let selectedDpi = "150";
+let selectedPptxMode = "editable";
 let currentFile = null;
 let toastTimer = null;
 
@@ -35,8 +37,18 @@ document.querySelectorAll("#output-toggle .seg-btn").forEach(btn => {
     document.querySelectorAll("#output-toggle .seg-btn").forEach(b => b.classList.remove("active"));
     btn.classList.add("active");
     selectedOutput = btn.dataset.value;
-    fmtGroup.classList.toggle("hidden", selectedOutput === "docx");
+    fmtGroup.classList.toggle("hidden", selectedOutput !== "images");
+    pptxModeGroup.classList.toggle("hidden", selectedOutput !== "pptx");
     dpiGroup.classList.toggle("hidden", selectedOutput === "docx");
+  });
+});
+
+// PPTX mode toggle
+document.querySelectorAll("#pptx-mode-toggle .seg-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll("#pptx-mode-toggle .seg-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    selectedPptxMode = btn.dataset.value;
   });
 });
 
@@ -122,6 +134,8 @@ convertBtn.addEventListener("click", async () => {
   try {
     if (selectedOutput === "docx") {
       await convertToDocx();
+    } else if (selectedOutput === "pptx") {
+      await convertToPptx();
     } else {
       await convertToImages();
     }
@@ -165,6 +179,28 @@ async function convertToDocx() {
     setTimeout(() => {
       progressSection.classList.add("hidden");
       showDocxResult(data);
+    }, 400);
+  } catch (err) {
+    progressSection.classList.add("hidden");
+    showToast(err.message, "error");
+  }
+}
+
+async function convertToPptx() {
+  const form = new FormData();
+  form.append("file", currentFile);
+  form.append("dpi", selectedDpi);
+  form.append("mode", selectedPptxMode);
+  form.append("password", pdfPasswordInput.value.trim());
+
+  try {
+    const res = await fetch("/convert-pptx", { method: "POST", body: form });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Conversion failed");
+    finishProgress();
+    setTimeout(() => {
+      progressSection.classList.add("hidden");
+      showDocxResult(data, "pptx");
     }, 400);
   } catch (err) {
     progressSection.classList.add("hidden");
@@ -220,14 +256,19 @@ function showImageResults(data) {
   resultSection.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
-function showDocxResult(data) {
+function showDocxResult(data, kind = "docx") {
+  const filename = `converted.${kind}`;
+  document.getElementById("docx-result-sub").textContent =
+    kind === "pptx" ? "Your PDF has been converted to PowerPoint format"
+                    : "Your PDF has been converted to Word format";
+  document.getElementById("docx-download-label").textContent = `Download ${kind.toUpperCase()}`;
   docxDownloadBtn.onclick = e => {
     e.preventDefault();
-    downloadFile(data.download_url, "converted.docx");
+    downloadFile(data.download_url, filename);
   };
   docxResultSection.classList.remove("hidden");
   docxResultSection.scrollIntoView({ behavior: "smooth", block: "start" });
-  setTimeout(() => downloadFile(data.download_url, "converted.docx"), 600);
+  setTimeout(() => downloadFile(data.download_url, filename), 600);
 }
 
 function downloadFile(url, filename) {
